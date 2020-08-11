@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet"
+	th:href="@{/webjars/bootstrap/{version}/css/bootstrap.min.css(version=${@webjarsConfig.bootstrap})}" />
+</head>
+<body>
+<body class="bg-info">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6 mx-auto">
+				<div class="card my-5 pb-5">
+					<div class="card-body">
+						<h3 class="card-title text-center">会議室予約</h3>
+
+						<a class="badge badge-light"
+							th:href="@{/rooms/{date}(date=${date})}">会議室一覧へ</a>
+						
+						<div th:if="${date eq compareDate or date >= compareDate}">
+
+							<form method="post"
+								th:action="@{/reservations/{date}/{roomId}(date=${date},roomId=${roomId})}"
+								th:object="${reservation}">
+
+								<table class="table table-borderless mt-5"
+									style="table-layout: fixed;">
+									<thead>
+										<tr>
+											<th class="w-25">項目</th>
+											<th class="w-75">詳細</th>
+										</tr>
+									</thead>
+									<tr>
+										<td>
+											<p>会議室名:</p>
+										</td>
+										<td>
+											<p class="h5" th:text="${meetingroom.roomName}"></p> <input
+											type="hidden" name="roomId" th:value="${roomId}" id="roomId" />
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<p>予約者名:</p>
+										</td>
+										<td>
+											<p class="h5"
+												th:text="${#authentication.principal.firstName}"></p> <input
+											type="hidden" name="userId"
+											th:value="${#authentication.principal.username}" />
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<p>予約日:</p>
+										</td>
+										<td>
+											<p class="h5"
+												th:text="${#temporals.format(date,'yyyy/MM/dd')}"></p> <input
+											type="hidden" name="reservedDate" th:value="${date}"
+											id="reservedDate" />
+										</td>
+									</tr>
+									<tr>
+
+										<td>予約時間</td>
+										<td><select th:field="*{startTime}" id="start_time_list">
+												<option value="">開始</option>
+										</select> <select th:field="*{endTime}" id="end_time_list">
+												<option value="">終了</option>
+										</select>
+											<p class="text-danger"
+												th:if="${#fields.hasErrors('startTime')}"
+												th:errors="*{startTime}">startTime error</p>
+
+											<p class="text-danger"
+												th:if="${#fields.hasErrors('endTime')}"
+												th:errors="*{endTime}">endTime error</p></td>
+									</tr>
+
+								</table>
+								<div class="text-center">
+									<button class="btn btn-primary" type="submit">予約</button>
+								</div>
+
+
+							</form>
+						</div>
+
+
+						<table class="table mt-5">
+							<thead>
+								<tr>
+									<th>時間帯</th>
+									<th>予約者</th>
+									<th>操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="reserve : ${reserveList}">
+									<td><span th:text="${reserve.startTime}"></span>~<span
+										th:text="${reserve.endTime}"></span></td>
+									<td th:text="${reserve.firstName}">予約者を表示する</td>
+
+									<td>
+										<form method="post"
+											th:action="@{/reservations/{date}/{roomId}(date=${date},roomId=${roomId})}">
+											<input type="hidden" name="reservationId"
+												th:value="${reserve.reservationId}">
+											<button class="btn btn-danger btn-sm" type="submit"
+												name="cancel"
+												th:if="${#authorization.expression('hasRole(''ADMIN'')')}
+										or ${#authentication.principal.username == reserve.userId}">取消</button>
+										</form>
+									</td>
+								</tr>
+
+							</tbody>
+						</table>
+
+
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<script
+		th:src="@{/webjars/jquery/{version}/jquery.min.js(version=${@webjarsConfig.jquery})}"></script>
+	<script
+		th:src="@{/webjars/bootstrap/{version}/js/bootstrap.min.js(version=${@webjarsConfig.bootstrap})}"></script>
+	<script>
+		$(function() {
+			$('#start_time_list').on(
+					'mouseover',
+					function() {
+
+						$.ajax({
+							type : "GET",
+							url : "/reservations/" + $('#reservedDate').val()
+									+ "/" + $('#roomId').val()
+									+ "/getStartTime",
+							dataType : "text",
+							success : function(msg) {
+								$("#start_time_list").html(msg);
+							}
+						});
+					});
+
+			$("#start_time_list").change(
+					function() {
+						$.ajax({
+							type : "POST",
+							url : "/reservations/" + $('#reservedDate').val()
+									+ "/" + $('#roomId').val() + "/getEndTime",
+							data : "selectStartTime="
+									+ $("#start_time_list").val(),
+							dataType : "text",
+							success : function(msg) {
+								$("#end_time_list").html(msg);
+							}
+						});
+					});
+
+		});
+	</script>
+</body>
+</html>

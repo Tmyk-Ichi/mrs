@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet"
+	th:href="@{/webjars/bootstrap/{version}/css/bootstrap.min.css(version=${@webjarsConfig.bootstrap})}" />
+</head>
+<body>
+<body class="bg-info">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6 mx-auto">
+				<div class="card mt-5 pb-5">
+					<div class="card-body">
+						<h3 th:text="${#temporals.format(date, 'yyyy/MM/dd') + 'の会議室'}"
+							class="card-title text-center mb-5">会議室一覧</h3>
+
+						<a class="badge badge-light"
+							th:href="@{/rooms/{date}(
+							date=${date.minusDays(1)})}">&#12296;
+							前日</a>
+							
+							<!-- 日付の遷移 -->	
+							
+						 <a class="badge badge-light float-right"
+							th:href="@{/rooms/{date}(date=${date.plusDays(1)})}">翌日
+							&#12297;</a>
+
+
+						<ul th:each="room:${roomlist}"
+							class="list-group list-group-flush text-center">
+							<li class="list-group-item h4"><a class="text-dark" th:text="${room.roomName}" th:href="@{/reservations/{date}/{roomId}(date=${date}, roomId=${room.roomId})}"></a></li>
+						</ul>
+
+						<div class="text-center mt-3">
+							<form method="post" th:action="@{/logout}">
+								<button class="btn btn-danger" type="submit">ログアウト</button>
+							</form>
+						</div>
+
+
+
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<script
+		th:src="@{/webjars/jquery/{version}/jquery.min.js(version=${@webjarsConfig.jquery})}"></script>
+	<script
+		th:src="@{/webjars/bootstrap/{version}/js/bootstrap.min.js(version=${@webjarsConfig.bootstrap})}"></script>
+
+</body>
+</html>

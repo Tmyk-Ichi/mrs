@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mrs.domain.repository.reservation.ReservationMapper">
+	
+	<!-- マッピング定義 -->
+	<resultMap type="mrs.domain.model.ReserveInfo"
+		id="reserveInfo">
+		<id column="reservation_id" property="reservationId" />
+		<result column="start_time" property="startTime" />
+		<result column="end_time" property="endTime" />
+		<result column="user_id" property="userId" />
+		<result column="first_name" property="firstName" />			
+	</resultMap>
+	
+
+	<!-- 該当する日付/該当するroomIdで検索 -->
+	<select id="findReserveInfo" resultMap="reserveInfo">
+		SELECT
+		reservation_id,
+		start_time,
+		end_time,
+		reservation.user_id,
+		first_name
+		FROM
+		reservation
+		left outer join usr
+		on reservation.user_id = usr.user_id
+		WHERE
+		reserved_date = #{reservedDate}
+		and room_id = #{roomId}
+		ORDER BY start_time ASC;
+	</select>
+	
+	<insert id="insert"
+		parameterType="mrs.domain.model.Reservation">
+		INSERT INTO reservation(
+		start_time,
+		end_time,
+		reserved_date,
+		room_id,
+		user_id
+		)
+		VALUES(
+		#{startTime},
+		#{endTime},
+		#{reservedDate},
+		#{roomId},
+		#{userId}
+		);
+	</insert>
+	
+	<!-- １件削除 -->
+	<delete id="deleteOne" parameterType="int">
+		DELETE FROM reservation 
+		WHERE
+		reservation_id = #{reservationId}
+	</delete>
+	
+</mapper>
